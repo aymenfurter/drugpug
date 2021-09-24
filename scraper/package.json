@@ -1,0 +1,19 @@
+{
+   "name": "data-extration-pipeline",
+   "version": "0.0.1",
+   "description": "Processing Leaflets",
+   "main": "index.js",
+   "scripts": {},
+   "files": [],
+   "keywords": [],
+   "author": "Aymen Furter",
+   "repository": {},
+   "license": "MIT",
+   "dependencies": {
+      "async": "^2.6.1",
+      "csv-parser": "^3.0.0",
+      "follow-redirects": "^1.14.4",
+      "request": "^2.88.0"
+   },
+   "devDependencies": {}
+}
