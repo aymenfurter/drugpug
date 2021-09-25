@@ -6,12 +6,12 @@ import { Component, ElementRef, ViewChild, ChangeDetectionStrategy, OnInit, Outp
   templateUrl: './infopanel.component.html'
 })
 export class Infopanel {
-  loadXyoExample(): void {    
-      this.fireSearchEvent("Xyosted");
+  loadJanumetExample(): void {    
+      this.fireSearchEvent("Janumet");
   }
   
-  loadZubsolvExample(): void {
-      this.fireSearchEvent("Zubsolv");
+  loadHydreaExample(): void {
+      this.fireSearchEvent("Hydrea");
   }
 
   @Output() searchEvent = new EventEmitter<string>();

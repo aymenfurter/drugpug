@@ -1,33 +1,93 @@
-
-
 <div class="row">
   <div id="visNetwork" #visNetwork></div>
 </div>
 
-<infopanel [class.example-mode-hidden]="!exampleMode" class="row" (searchEvent)="onSearchImageEvent($event)">InfoPanel</infopanel>
+<infopanel [class.example-mode-hidden]="!exampleMode" class="row" (searchEvent)="onSearchImageEvent($event)">InfoPanel
+</infopanel>
 
 <div *ngIf="drug" class="row" [class.example-mode-hidden]="exampleMode">
-<div  class="col-md-5" style="margin-top: 100px">
-  <nb-card class="size-medium">
-    <nb-card-header>General Information {{drug.name}} </nb-card-header>
-    <nb-card-body>
-      <h5>About</h5>
-      <p>
-        Drupug is a tool which helps you to find always-up-to-date information about the drugs you are taking.
-        This tool was created as part of the HACK Zurich 2021 Event.
-      </p>
-    </nb-card-body>
-  </nb-card>
-</div>
+  <div class="col-md-5" style="margin-top: 100px">
+    <nb-card class="size-small">
+      <nb-card-header>
+        <h3>{{drug.name}}</h3>
+        <h7>by {{drug.company}}</h7>
+    </nb-card-header>
+      <nb-card-body>
+<style>
+  .infoPanel {
+    float:left;
+    height: 60px;
+  }
+</style>
+        <div class="infoPanel" *ngFor="let element of drug.doNotTake"> 
+        <nb-alert outline="danger" _nghost-grn-c133="" class="status-basic outline-danger" style="margin: 3px">
+          ⚠  {{element.name}} (Unsuitable)
+        </nb-alert>
+        </div>
+
+        <div class="infoPanel" *ngFor="let element of drug.avoidDuringThreatmenet"> 
+        <nb-alert outline="danger" _nghost-grn-c133="" class="status-basic outline-danger" style="margin: 3px">
+          ⚠ {{element.name}} (Don't mix)
+        </nb-alert>
+        </div>
+        <div class="infoPanel" *ngFor="let sideEffect of drug.sideEffects"> 
+        <nb-alert outline="warning" _nghost-grn-c133="" class="status-basic outline-warning" style="margin: 3px">
+          ⚠ {{sideEffect.name}} (Side Effect)
+        </nb-alert>
+        </div>
+        <div class="infoPanel" *ngFor="let element of drug.sideEffects"> 
+        <nb-alert outline="warning" _nghost-grn-c133="" class="status-basic outline-warning" style="margin: 3px">
+          ⚠ {{element.name}} (Check with Healthcare Provider)
+        </nb-alert>
+        </div>
+
+        <div class="infoPanel" *ngFor="let element of drug.importantInformation"> 
+        <nb-alert outline="info" _nghost-grn-c133="" class="status-basic outline-info" style="margin: 3px">
+          🛈 {{element.name}} (Important)
+        </nb-alert>
+        </div>
+
+        <div class="infoPanel" *ngFor="let element of drug.whatIs"> 
+        <nb-alert outline="info" _nghost-grn-c133="" class="status-basic outline-info" style="margin: 3px">
+          🛈 {{element.name}} 
+        </nb-alert>
+        </div>
+
+        <div class="infoPanel" *ngFor="let element of drug.administration"> 
+        <nb-alert outline="info" _nghost-grn-c133="" class="status-basic outline-info" style="margin: 3px">
+          🛈 {{element.name}} (Administration)
+        </nb-alert>
+        </div>
+
+        <div class="infoPanel" *ngFor="let element of drug.generalInformation"> 
+        <nb-alert outline="info" _nghost-grn-c133="" class="status-basic outline-info" style="margin: 3px">
+          🛈 {{element.name}} 
+        </nb-alert>
+        </div>
+
+      </nb-card-body>
+    </nb-card>
+    <nb-card _ngcontent-abk-c323="" class="list-card" _nghost-abk-c77="">
+      <nb-card-header _ngcontent-abk-c323="">Ingredients</nb-card-header>
+      <nb-card-body _ngcontent-abk-c323="">
+        <nb-list _ngcontent-abk-c323="" _nghost-abk-c152="" role="list">
+          <nb-list-item *ngFor="let ingredient of drug.ingredients" _ngcontent-abk-c323="" _nghost-abk-c153="" role="listitem" class="ng-star-inserted"> {{ingredient.name}} 
+          </nb-list-item>
+        </nb-list>
+      </nb-card-body>
+    </nb-card>
+  </div>
 
 
-<div  class="col-md-7" style="margin-top: 100px">
-  <nb-card class="size-giant">
-    <nb-card-body>
-        <iframe [src]="drug.pdf.url | safe: 'resourceUrl'" width="100%" height="100%" frameBorder="0">Browser not compatible.</iframe>
-    </nb-card-body>
-  </nb-card>
-</div>
+  <div class="col-md-7" style="margin-top: 100px">
+    <nb-card class="size-giant">
+      <nb-card-body>
+        <iframe [src]="drug.pdf.url | safe: 'resourceUrl'" width="100%" height="100%" frameBorder="0">Browser not
+          compatible.</iframe>
+      </nb-card-body>
+    </nb-card>
+  </div>
 </div>
 
-<searchbar [api]="api" (expandAllEvent)="expandAll()" (newSearchEvent)="onNewSearchImageEvent($event)">Searchbar</searchbar>
+<searchbar [api]="api" (expandAllEvent)="expandAll()" (newSearchEvent)="onNewSearchImageEvent($event)">Searchbar
+</searchbar>
