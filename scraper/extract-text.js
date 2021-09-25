@@ -4,10 +4,23 @@ const request = require('request');
 const csv = require('csv-parser');
 const fs = require('fs');
 var http = require('follow-redirects').http;
+const Fuse = require('fuse.js')
 const https = require('https'); 
 const { getSystemErrorMap } = require('util');
 var path = require('path')
 var extract = require('pdf-text-extract')
+const { TextAnalyticsClient, AzureKeyCredential } = require("@azure/ai-text-analytics");
+
+const key = process.env.API_KEY;
+const endpoint = 'https://text-analysis-octopus.cognitiveservices.azure.com/'; 
+
+const options = {
+  includeScore: true
+}
+
+console.log(key);
+const client = new TextAnalyticsClient(endpoint,  new AzureKeyCredential(key));
+
 
 var entries = [];
 
@@ -31,7 +44,7 @@ var chapters = [];
 {
     var chapter = {};
     chapter.key = "avoid-during-threatmenet";
-    chapter.identifer = ["What should be avoided during treatment with"];
+    chapter.identifier = ["What should be avoided during treatment with"];
     chapter.endMarks = "?";
     chapters.push(chapter);
 }
@@ -56,7 +69,7 @@ var chapters = [];
     var chapter = {};
     chapter.key = "healthcare-provider";
     chapter.identifier = ["Before you receive ##PRODUCT_NAME##, tell your healthcare provider"];
-    cahtper.endMark = ":";
+    chapter.endMark = ":";
     chapters.push(chapter);
 }
 
@@ -65,7 +78,7 @@ var chapters = [];
     var chapter = {};
     chapter.key = "administration";
     chapter.identifier = ["How will I receive", "How should ##PRODUCT_NAME## be taken"];
-    cahtper.endMark = "?";
+    chapter.endMark = "?";
     chapters.push(chapter);
 }
 
@@ -89,7 +102,7 @@ var chapters = [];
 {
     var chapter = {};
     chapter.key = "general-information";
-    chapter.identifier = ["General information about the safe and effective use of", "General information about ##PRODUCT_NAME##"];
+    chapter.identifier = ["General information about the safe and effective use of ##PRODUCT_NAME##", "General information about ##PRODUCT_NAME##"];
     chapter.endMark = ".";
     chapters.push(chapter);
 }
@@ -117,19 +130,92 @@ function readGuidesCSV () {
         entries.push(row);
     })
     .on('end', () => {
-      entries.forEach(function (drug, index) {
+        // just first entry for testing.
+        processCSVLine(entries[0]);
+      /*entries.forEach(function (drug, index) {
         setTimeout(function () {
-          processDrug(drug)
+          processCSVLine(drug)
         }, index * 250);
       });
+    });*/
     });
 }
 
-function processDrug(drug) {
+function nextChapter(text) {
+    var identifiedChapter;
+
+
+    var response = {}
+    response.remainingText;
+}
+
+function analyzeDrug(drug) {
+    var text = drug.text;
+
+    var textLines = text.split(/\r?\n/); 
+
+    var identifiedChapters = [];
+
+    for (let chapter of chapters) {
+        const fuse = new Fuse(textLines, options);
+        const results = fuse.search(chapter.identifier[0].replace("##PRODUCT_NAME##", drug.name));
+        var result = results[0];
+        
+        if (result && result.score <= 0.75) {
+            var identifiedChapter = result;
+            identifiedChapter.key = chapter.key;
+            identifiedChapters.push(identifiedChapter);
+        }
+    }
+
+    identifiedChapters.sort(function(a, b) {
+        return a.refIndex - b.refIndex;
+    });
+
+
+    var finalElements = [];
+    var prevChapter;
+    for (let chapter of identifiedChapters) {
+        if (prevChapter) {
+            var prevChapterText = textLines.slice(prevChapter.refIndex + 1, chapter.refIndex).join();
+            prevChapter.text = prevChapterText;
+            finalElements.push(prevChapter);
+        }
+
+        prevChapter = chapter;
+
+        if (prevChapter.refIndex == identifiedChapters.slice(-1)[0].refIndex) {
+            var prevChapterText = textLines.slice(prevChapter.refIndex + 1, textLines.length).join();
+            prevChapter.text = prevChapterText;
+            finalElements.push(prevChapter);
+        }
+    }
+
+    executeNER(drug, finalElements);
+}
+
+async function executeNER(drug, finalElements) {
+    for (let element of finalElements) {
+        if (element.text) {
+            const entityResults = await client.recognizeEntities( [element.text] );
+
+            entityResults.forEach(document => {
+                console.log("Analyzing .. " + element.key);
+                console.log(`Document ID: ${document.id}`);
+                document.entities.forEach(entity => {
+                    console.log(`\tName: ${entity.text} \tCategory: ${entity.category} \tSubcategory: ${entity.subCategory ? entity.subCategory : "N/A"}`);
+                    console.log(`\tScore: ${entity.confidenceScore}`);
+                });
+            });
+
+        }
+    }
+}
+
+function processCSVLine(drug) {
     var url = drug["Link"];
     var filename = "data/" + url.substring(url.lastIndexOf('/')+1);
     extract(filename, function (err, pages) {
-        console.log(filename);
 
         if (err) {
             console.dir(err)
@@ -143,8 +229,15 @@ function processDrug(drug) {
         }
 
         pagesSliced = pages.splice(startPage, pages.length);
-
-        console.log(pagesSliced);
+        var entry = {}
+        entry.name = drug["Drug Name"];
+        entry.activeIngredient = drug["Active Ingredient"];
+        entry.formRoute = drug["Form;Route"];
+        entry.applNo = drug["Appl. No."];
+        entry.company = drug["Company"];
+        entry.date = drug["Date"];
+        entry.text = pagesSliced.join();
+        analyzeDrug(entry);
     })
 }
 
