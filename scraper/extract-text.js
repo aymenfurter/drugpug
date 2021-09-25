@@ -10,6 +10,11 @@ const { getSystemErrorMap } = require('util');
 var path = require('path')
 var extract = require('pdf-text-extract')
 const { TextAnalyticsClient, AzureKeyCredential } = require("@azure/ai-text-analytics");
+const elasticHost = process.env.ELASTIC_IP;
+const { Client } = require('@elastic/elasticsearch')
+const elasticClient = new Client({ node: elasticHost })
+
+console.log(elasticHost);
 
 const key = process.env.API_KEY;
 const endpoint = 'https://text-analysis-octopus.cognitiveservices.azure.com/'; 
@@ -130,13 +135,10 @@ function readGuidesCSV () {
         entries.push(row);
     })
     .on('end', () => {
-        // just first entry for testing.
-        /*
-        processCSVLine(entries[0]);*/
         entries.forEach(function (drug, index) {
         setTimeout(function () {
           processCSVLine(drug)
-        }, index * 250);
+        }, index * 2000);
       });
     
     });
@@ -242,9 +244,21 @@ async function executeNER(drug, finalElements) {
     ingestData(drug);
 }
 
-function ingestData (drug) {  
+async function ingestData (drug) {  
     delete drug.text;  
+
+
+    console.log("Sending ... " + drug.name + " to " + elasticHost);
     console.log(drug);
+
+    var s = drug.name + drug.formRoute + drug.pdf.url;
+    const hashCode = s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0)
+
+    await elasticClient.index({
+        index: 'leaflets',
+        id: hashCode,
+        body: drug
+    });
 }
 
 function processCSVLine(drug) {
@@ -280,4 +294,10 @@ function processCSVLine(drug) {
 }
 
 setup();
-readGuidesCSV();
+elasticClient.indices.delete({
+  index: 'aymentest',
+}).then(function(resp) {
+    readGuidesCSV();
+}, function(err) {
+  console.trace(err.message);
+});
