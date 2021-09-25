@@ -12,6 +12,8 @@ import { ThemeModule } from './@theme/theme.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { FormsModule } from '@angular/forms';
+import { SafePipeModule } from 'safe-pipe';
+
 
 import {
   NbAutocompleteModule,
@@ -31,6 +33,7 @@ import {
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
+    SafePipeModule,
     AppRoutingModule,
     NbSidebarModule.forRoot(),
     NbMenuModule.forRoot(),

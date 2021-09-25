@@ -1,17 +1,33 @@
+
+
 <div class="row">
   <div id="visNetwork" #visNetwork></div>
 </div>
 
 <infopanel [class.example-mode-hidden]="!exampleMode" class="row" (searchEvent)="onSearchImageEvent($event)">InfoPanel</infopanel>
 
-<div class="details">
-  <variants class="row variant-detail" [currentHash]="currentHash" (selectHashEvent)="viewHash($event)" (selectTagEvent)="viewTag($event)" [slimMode]="slimMode" [detailDataTagsFull]="detailDataTagsFull" [detailDataTags]="detailDataTags" [hashes]="hashes"></variants>
-  <div class="row image-element" *ngFor="let img of imageTree; let first=first;">    
-    <div [class.arrow-up]="!first"></div>
-    <div class="col-md-12">      
-      <layer [img]="img[0]"></layer>
-    </div>
-  </div>
+<div *ngIf="drug" class="row" [class.example-mode-hidden]="exampleMode">
+<div  class="col-md-5" style="margin-top: 100px">
+  <nb-card class="size-medium">
+    <nb-card-header>General Information {{drug.name}} </nb-card-header>
+    <nb-card-body>
+      <h5>About</h5>
+      <p>
+        Drupug is a tool which helps you to find always-up-to-date information about the drugs you are taking.
+        This tool was created as part of the HACK Zurich 2021 Event.
+      </p>
+    </nb-card-body>
+  </nb-card>
+</div>
+
+
+<div  class="col-md-7" style="margin-top: 100px">
+  <nb-card class="size-giant">
+    <nb-card-body>
+        <iframe [src]="drug.pdf.url | safe: 'resourceUrl'" width="100%" height="100%" frameBorder="0">Browser not compatible.</iframe>
+    </nb-card-body>
+  </nb-card>
+</div>
 </div>
 
 <searchbar [api]="api" (expandAllEvent)="expandAll()" (newSearchEvent)="onNewSearchImageEvent($event)">Searchbar</searchbar>

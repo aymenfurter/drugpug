@@ -6,12 +6,12 @@ import { Component, ElementRef, ViewChild, ChangeDetectionStrategy, OnInit, Outp
   templateUrl: './infopanel.component.html'
 })
 export class Infopanel {
-  loadHubExample(): void {    
-      this.fireSearchEvent("library/debian:bullseye");
+  loadXyoExample(): void {    
+      this.fireSearchEvent("Xyosted");
   }
   
-  loadMcrExample(): void {
-      this.fireSearchEvent("mcr.microsoft.com/dotnet/core/runtime-deps:latest");
+  loadZubsolvExample(): void {
+      this.fireSearchEvent("Zubsolv");
   }
 
   @Output() searchEvent = new EventEmitter<string>();

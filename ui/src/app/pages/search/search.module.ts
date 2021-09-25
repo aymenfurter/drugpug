@@ -25,6 +25,7 @@ import { Infopanel } from './infopanel.component';
 import { Searchbar } from './searchbar.component';
 import { Variants } from './variants.component';
 import { Layer } from './layer.component';
+import { SafePipeModule } from 'safe-pipe';
 import { LeafletLayersDirective } from '@asymmetrik/ngx-leaflet';
 ;
 
@@ -44,6 +45,7 @@ import { LeafletLayersDirective } from '@asymmetrik/ngx-leaflet';
     NgxChartsModule,
     HttpClientModule,
     FormsModule,
+    SafePipeModule,
     NbAutocompleteModule
   ],
   declarations: [

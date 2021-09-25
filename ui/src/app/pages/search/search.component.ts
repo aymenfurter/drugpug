@@ -11,6 +11,7 @@ import { Toaster } from './toaster';
 import { NetworkFactory } from './network';
 import { DetailView } from './detailview';
 
+
 @Component({
   selector: 'ngx-search',
   styleUrls: ['./search.component.scss'],
@@ -37,8 +38,12 @@ export class SearchComponent {
   updateInProgress: boolean = false;
   imageName: string;
   delay: any = 1;
+  drug;
 
-  constructor(private detailView: DetailView, private graph: Graph, private networkFactory: NetworkFactory, private toaster: Toaster, private date: DateFormat, api: ApiService) { this.api = api; graph.parent = this; detailView.parent = this}
+  constructor(private detailView: DetailView, private graph: Graph, private networkFactory: NetworkFactory, private toaster: Toaster, private date: DateFormat, api: ApiService) { 
+    this.api = api; graph.parent = this; detailView.parent = this;
+
+  }
 
   resetSearch() {
     this.graph.reset();
@@ -67,21 +72,28 @@ export class SearchComponent {
   }
 
   onSearch() {
+    console.log("search");
     this.api.getNetwork(this.imageName)
       .subscribe(data => {
         var result = <Array<any>>data;
-        if (result.length == 0) {
-          this.graph.handleNoResult(this);
-        } else {
-          this.graph.processResult(data);
-        }
+        this.drug = result["hits"]["hits"][0]["_source"];
+
+        var url = this.drug.pdf.url;
+
+        // to be moved to storage account.
+        this.drug.pdf.url = "/assets/pdf/" +url.substring(url.lastIndexOf('/')+1);
+
+
+
+
+        this.exampleMode = false;
       });
   }
 
   onSearchImageEvent(imageName: string): void {
     this.imageName = imageName;
     this.onSearch();
-    this.updateImageDetails();
+    //this.updateImageDetails();
   }
 
   onNewSearchImageEvent(imageName: string): void {
