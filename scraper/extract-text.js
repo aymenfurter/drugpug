@@ -28,14 +28,14 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "important-information";
+    chapter.key = "importantInformation";
     chapter.identifier = ["What is the most important information"];
     chapter.endMark = "?";
     chapters.push(chapter);
 }
 {
     var chapter = {};
-    chapter.key = "what-is";
+    chapter.key = "whatIs";
     chapter.identifier = ["What is ##PRODUCT_NAME##"];
     chapter.endMarks = "?";
     chapters.push(chapter);
@@ -43,7 +43,7 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "avoid-during-threatmenet";
+    chapter.key = "avoidDuringThreatmenet";
     chapter.identifier = ["What should be avoided during treatment with"];
     chapter.endMarks = "?";
     chapters.push(chapter);
@@ -51,7 +51,7 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "other-medicine";
+    chapter.key = "otherMedicine";
     chapter.identifier = ["Can ##PRODUCT_NAME## be taken with other medicines"];
     chapter.endMark = "?"
     chapters.push(chapter);
@@ -59,7 +59,7 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "do-not-take";
+    chapter.key = "doNotTake";
     chapter.identifier = ["Do not take ##PRODUCT_NAME## if you or your child are", "Do not use ##PRODUCT_NAME## if you", "Who should not take"];
     chapter.endMark = ":";
     chapters.push(chapter);
@@ -67,7 +67,7 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "healthcare-provider";
+    chapter.key = "healthcareProvider";
     chapter.identifier = ["Before you receive ##PRODUCT_NAME##, tell your healthcare provider"];
     chapter.endMark = ":";
     chapters.push(chapter);
@@ -85,7 +85,7 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "side-effects";
+    chapter.key = "sideEffects";
     chapter.identifier = "What are the possible side effects";
     chapter.endMark = "?";
     chapters.push(chapter);
@@ -101,7 +101,7 @@ var chapters = [];
 
 {
     var chapter = {};
-    chapter.key = "general-information";
+    chapter.key = "generalInformation";
     chapter.identifier = ["General information about the safe and effective use of ##PRODUCT_NAME##", "General information about ##PRODUCT_NAME##"];
     chapter.endMark = ".";
     chapters.push(chapter);
@@ -131,13 +131,14 @@ function readGuidesCSV () {
     })
     .on('end', () => {
         // just first entry for testing.
-        processCSVLine(entries[0]);
-      /*entries.forEach(function (drug, index) {
+        /*
+        processCSVLine(entries[0]);*/
+        entries.forEach(function (drug, index) {
         setTimeout(function () {
           processCSVLine(drug)
         }, index * 250);
       });
-    });*/
+    
     });
 }
 
@@ -194,22 +195,56 @@ function analyzeDrug(drug) {
     executeNER(drug, finalElements);
 }
 
+function allowlisted(str, drug) {
+    // Product name should not be part of the tag name
+    if (str.replace(/\s/g, '').toLowerCase().includes(drug.name.replace(/\s/g, '').toLowerCase())) {
+        return false;
+    }
+
+    var allowlist = ["medicines", "tablet"];
+    allowlist.push(drug.name);
+    for (let allowlistEntry of allowlist) {
+        if (allowlistEntry.replace(/\s/g, '').toLowerCase() === str.replace(/\s/g, '').toLowerCase()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 async function executeNER(drug, finalElements) {
     for (let element of finalElements) {
         if (element.text) {
             const entityResults = await client.recognizeEntities( [element.text] );
+            for (let document of entityResults) {
+                if (document.entities) {
+                    processedEntities = {}
+                    for (let entity of document.entities) {
+                        if (!drug[element.key]) {
+                            drug[element.key] = [];
+                        }
+                        if (!processedEntities[entity.text] &&((entity.category != "PersonType" && entity.category != "Location" && entity.category != "Organization") && entity.confidenceScore >= 0.85)) {
+                            if (allowlisted(entity.text, drug)) {
+                                processedEntities[entity.text] = true;
+                                var tag = {};
+                                tag.name = entity.text;
+                                tag.category = entity.category;
+                                drug[element.key].push(tag);
+                            }
+                        }
 
-            entityResults.forEach(document => {
-                console.log("Analyzing .. " + element.key);
-                console.log(`Document ID: ${document.id}`);
-                document.entities.forEach(entity => {
-                    console.log(`\tName: ${entity.text} \tCategory: ${entity.category} \tSubcategory: ${entity.subCategory ? entity.subCategory : "N/A"}`);
-                    console.log(`\tScore: ${entity.confidenceScore}`);
-                });
-            });
+                    }
+                }
+            };
 
         }
     }
+
+    ingestData(drug);
+}
+
+function ingestData (drug) {  
+    delete drug.text;  
+    console.log(drug);
 }
 
 function processCSVLine(drug) {
@@ -233,8 +268,11 @@ function processCSVLine(drug) {
         entry.name = drug["Drug Name"];
         entry.activeIngredient = drug["Active Ingredient"];
         entry.formRoute = drug["Form;Route"];
-        entry.applNo = drug["Appl. No."];
+        //entry.applNo = drug["Appl. No."]; - is always undefined
         entry.company = drug["Company"];
+        entry.pdf = {};
+        entry.pdf.url = drug["Link"];
+        entry.pdf.startPage = startPage;
         entry.date = drug["Date"];
         entry.text = pagesSliced.join();
         analyzeDrug(entry);
