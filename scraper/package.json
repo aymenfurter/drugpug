@@ -1,0 +1,23 @@
+{
+   "name": "data-extration-pipeline",
+   "version": "0.0.1",
+   "description": "Processing Leaflets",
+   "main": "index.js",
+   "scripts": {},
+   "files": [],
+   "keywords": [],
+   "author": "Aymen Furter",
+   "repository": {},
+   "license": "MIT",
+   "dependencies": {
+      "@azure/ai-text-analytics": "^5.1.0",
+      "@elastic/elasticsearch": "^7.15.0",
+      "async": "^2.6.1",
+      "csv-parser": "^3.0.0",
+      "follow-redirects": "^1.14.4",
+      "fuse.js": "^6.4.6",
+      "pdf-text-extract": "^1.5.0",
+      "request": "^2.88.0"
+   },
+   "devDependencies": {}
+}
