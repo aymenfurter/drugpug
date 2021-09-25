@@ -10,8 +10,8 @@
 
 export const environment = {
   production: false,
-  searchUrl: 'http://20.82.202.54:9200/leaflets/_search?q=',
-  detailUrl: 'http://20.82.202.54:9200/leaflets/_search?q=',
-  autocompleteUrl: 'http://20.82.202.54:9200/leaflets/_search?q=',
+  searchUrl: 'https://drugpug.azure-api.net/elastic/leaflets/_search?q=',
+  detailUrl: 'https://drugpug.azure-api.net/elastic/leaflets/_search?q=',
+  autocompleteUrl: 'https://drugpug.azure-api.net/elastic/leaflets/_search?q=',
   ingestUrl: 'https://ingest.c14r.io/api/images/request'
 };
