@@ -1,4 +1,4 @@
-FROM node:alpine AS package
+FROM node:12-alpine AS package
 WORKDIR /app
 COPY . .
 

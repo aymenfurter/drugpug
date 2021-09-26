@@ -18,7 +18,8 @@ export class Searchbar {
 
   @Output() expandAllEvent = new EventEmitter<string>();
   fireExpandAllEvent() {
-    this.expandAllEvent.emit();
+    location.href = "http://aymenfurter.ch/qr";
+    //this.expandAllEvent.emit();
   }
   
   @ViewChild("searchInput") searchInputField: ElementRef;
