@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: qr-service
 spec:
   type: LoadBalancer
   selector:
-    app: frontend
+    app: qr
   ports:
     - protocol: TCP
       port: 80
@@ -14,21 +14,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: qr-deployment
   labels:
-    app: frontend
+    app: qr
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: qr
   template:
     metadata:
       labels:
-        app: frontend
+        app: qr
     spec:
       containers:
-      - name: frontend
-        image: drugpugacrdev.azurecr.io/frontend:1.1
+      - name: qr
+        image: drugpugacrdev.azurecr.io/qr:1.0
         ports:
         - containerPort: 80
